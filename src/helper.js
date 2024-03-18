@@ -336,10 +336,22 @@ export function addOpenableSettings(container, buttonElement, label, content) {
     ],
   })
 
+
   function setOpened(opened) {
     if (opened) {
-      settingsContentWrapper.setAttribute("opened", "true")
+      const settingsTemplate = document.getElementById("settings-template")
+      const settingsContent = document.getElementById("settings-content")
+      const settingsTitle = document.getElementById("settings-title")
+      settingsTitle.innerText = label
+
+      settingsContent.innerHTML = '' 
+      settingsContent.appendChild(content)
+  
       settingsContentWrapper.style.display = "block"
+      settingsContentWrapper.innerHTML = ''
+      settingsContentWrapper.appendChild(settingsTemplate)
+
+      settingsContentWrapper.setAttribute("opened", "true")
       const otherSettings = [...document.querySelectorAll(".openable-settings")].filter(d => d != settingsContentWrapper)
       otherSettings.forEach(elem => elem.setOpened(false))
     } else { 
@@ -408,4 +420,64 @@ export async function unzipJson(path, filename) {
   const zip = new jszip()
   await zip.loadAsync(data)
   return JSON.parse(await zip.file(filename).async("string"))
+}
+
+export function hookSelect(
+  selector,
+  state,
+  valueProperty,
+  optionsProperty,
+  format = (d) => d
+) {
+  const select = document.querySelector(selector);
+  if (select == null) {
+    throw new Error(`No element found for ${selector}`);
+  }
+
+  function setOptions(options) {
+    const selectOptions = [];
+    select.innerHTML = ``;
+
+    if (options) {
+      for (let option of options) {
+        if (typeof option == "string") {
+          option = { value: option, label: format(option) };
+        }
+        selectOptions.push(option);
+        const optionElement = document.createElement("option");
+        optionElement.value = option.value;
+        optionElement.innerText = option.label;
+
+        if (option.value == state[valueProperty]) {
+          optionElement.selected = true;
+          select.value = option.value;
+        }
+        select.appendChild(optionElement);
+      }
+    }
+  }
+
+  state.subscribe(optionsProperty, () => {
+    setOptions(state[optionsProperty]);
+    state[valueProperty] = select.value;
+  });
+
+  state.subscribe(valueProperty, () => {
+    for (const option of select.options) {
+      if (option.value == state[valueProperty]) {
+        option.selected = true;
+      } else {
+        option.selected = false;
+      }
+    }
+  });
+
+  select.addEventListener("change", () => {
+    state[valueProperty] = select.value;
+  });
+  setOptions(state[optionsProperty]);
+
+  // if (select.value != "") {
+  //   state[valueProperty] = select.value
+  // }
 }

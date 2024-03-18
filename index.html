@@ -14,7 +14,7 @@
   <body>
     <header>
       <div id="logo-container">
-        <object id="logo" type="image/svg+xml" data="images/icon_menubar.svg">Your browser does not support SVG</object>
+        <object id="logo" type="image/svg+xml" data="images/icon_menubar.svg"></object>
         <span id="logo-text">ClusterRadar</span>
       </div>
 
@@ -31,7 +31,7 @@
       <div id="sidebar"> 
         <i class="settings-button fa-solid fa-folder" label="Configure data"></i>
         <i class="settings-button fa-solid fa-screwdriver-wrench" label="Methods"></i>
-        <i class="settings-button fas fa-palette" label="Coloring mode"></i>
+        <i class="settings-button fas fa-palette" label="Coloring mode" for="coloring-mode-settings"></i>
         <i id="download-button" class="settings-button fa-solid fa-download" label="Download results" noopen=></i>
         <!-- <i class="settings-button fa-solid fa-arrow-pointer"></i>
         <i class="settings-button fa-solid fa-earth-americas"></i>
@@ -136,6 +136,11 @@
           <i id="settings-close" class="fa-solid fa-xmark"></i>
         </div>
         <div id="settings-content"></div>
+      </div>
+
+      <div id="coloring-mode-settings">
+        <!-- <label for="coloring-mode-select" class="form-label">Coloring mode</label> -->
+        <select id="coloring-mode-select" class="form-select" aria-label="Coloring mode"></select>
       </div>
     </div>
   </body>

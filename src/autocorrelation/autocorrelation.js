@@ -11,7 +11,7 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
     permutations = 999,
     pCutoff = 0.05,
     weightTuples = null,
-    distributionBins = 20,
+    distributionBins = 10,
   } = options
   
   if (!LOCAL_METHOD_SET.has(method) && !GLOBAL_METHOD_SET.has(method)) {
@@ -61,8 +61,6 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
       d3.shuffle(idValuePairs)
       samples.push(idValuePairs.slice(0, maxNeighbors+1))
     }
-
-    console.log(spatialRows)
 
     const results = [] 
     for (const spatialRow of spatialRows) {

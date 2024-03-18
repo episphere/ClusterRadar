@@ -502,6 +502,10 @@ header {
   color: lightgrey;
 }
 
+#settings-content {
+  padding: 15px;
+}
+
 @keyframes flashAnimation {
   0%, 100% { background-color: #fdfdfd; }
   50% { background-color: #f2f2f2; }

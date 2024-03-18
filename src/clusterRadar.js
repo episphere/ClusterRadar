@@ -5,7 +5,7 @@ import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 import { categoricalColorLegend, plotChoropleth } from "./plots.js";
 import { State } from "./State.js";
 import { addOpenableSettings, addPathSelectionBox, addPopperTooltip, 
-  cacheWithVersion, downloadData, getPathsBoundingBox, unzipJson } from "./helper.js";
+  cacheWithVersion, downloadData, getPathsBoundingBox, hookSelect, unzipJson } from "./helper.js";
 
 // Here, we're going for some event based programming. To kick things off, the start() method runs which sets up 
 // various things which can run immediately (e.g. finding elements). start() runs the initializeState() method, which
@@ -68,6 +68,9 @@ const stuff = {}
 let state = null 
 
 const INITIAL_STATE = {
+  coloringMode: "cluster_agg",
+
+
   valueField: "crude_rate",
   geoIdField: "county_code",
   timeField: "year",
@@ -127,10 +130,11 @@ function start() {
   })
 
   document.querySelectorAll(".settings-button").forEach(element => {
-    addOpenableSettings(elements.mainContainer, element, element.getAttribute("label"))
+    const content = document.getElementById(element.getAttribute("for"))
+    addOpenableSettings(elements.mainContainer, element, element.getAttribute("label"), content)
   })
 
-  initializeColorStuff()
+  initializeColorStuff() 
 
   document.addEventListener('DOMContentLoaded', async function() {
     initializeState()
@@ -181,6 +185,15 @@ function initializeState() {
   state.subscribe("select", updateFocus)
   state.subscribe("multiSelect", updateMultiSelect)
 
+  // TODO: Make this dynamic with the enabled methods
+  const coloringModeOptions = [{value: "cluster_agg", label: "Aggregate summary"}]
+  state.clusteringMethods.forEach(method => coloringModeOptions.push(
+    {value: "single:" + method, label: METHOD_NAMES.get(method)}))
+  state.defineProperty("coloringModeOptions", coloringModeOptions)
+
+  hookSelect("#coloring-mode-select", state, "coloringMode", "coloringModeOptions")
+  state.subscribe("coloringMode", updateColoringMode)
+
   state.loadingProgress = { progress: 0, message: "Loading"}
 }
 
@@ -201,6 +214,14 @@ async function initialDataLoad() {
 // ===== Main event-based control logic =====
 // ==========================================
 
+function updateColoringMode() {
+  if (state.coloringMode == "cluster_agg") {
+    state.displayMode = {mode: "cluster_agg"}
+  } else {
+    const split = state.coloringMode.split(":")
+    state.displayMode = {mode: "cluster", method: split[1]}
+  }
+}
 
 function updatedLoadingProgress() {
   stuff.mainCard.setLoading(state.loadingProgress)
@@ -423,6 +444,7 @@ function updatePlotSettings() {
 
   updateFocus()
   updateMultiSelect()
+  drawMainColorLegend()
 }
 
 function updateFocus() {
@@ -499,7 +521,7 @@ function updateMultiSelect() {
 
     }
     const span = document.createElement("span")
-    span.innerText = "Select a sub-area by clicking or dragging on the map"
+    span.innerText = "Select a sub-area by dragging on the map"
     elements.mapHistoryCardContent.appendChild(span)
   }
 
@@ -852,10 +874,7 @@ function colorChoropleth(relevantResults, geoData, areaPaths, highlightMulti=tru
     // })
 }
 
-function drawBaseMap() {
-  const DRAW_DEBOUNCE = 200 
-  clearTimeout(stuff.drawMapTimeout)
-
+function drawMainColorLegend() {
   elements.mapColorLegend.innerHTML = '' 
   let legend = null 
   if (state.displayMode.mode == "cluster") {
@@ -866,8 +885,14 @@ function drawBaseMap() {
   } else {
     legend = categoricalColorLegend(GROUP_COLORS)
   }
-  
   elements.mapColorLegend.appendChild(legend)
+}
+
+function drawBaseMap() {
+  const DRAW_DEBOUNCE = 200 
+  clearTimeout(stuff.drawMapTimeout)
+
+  drawMainColorLegend()
 
   stuff.drawMapTimeout = setTimeout(() => {
     plotClusterChoropleth(elements.mapPlotContainer, state.data.geoData)
@@ -953,6 +978,8 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
         
         detailElement.innerHTML = '' 
         detailElement.appendChild(tooltipPlots)
+      } else {
+        detailElement.innerHTML = "No data"
       }
     //}
 
