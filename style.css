@@ -5,6 +5,10 @@ body {
   /* max-height: 100vh; */
 }
 
+* {
+  box-sizing: border-box;
+}
+
 header {
   display: flex;
   align-items: center;
@@ -493,17 +497,97 @@ header {
   margin-left: 5px;
 }
 
-#settings-close {
+.close-button {
   cursor: pointer;
   color: grey;
 }
 
-#settings-close:hover {
+.close-button:hover {
   color: lightgrey;
 }
 
 #settings-content {
   padding: 15px;
+}
+
+#helper-tooltip {
+  display: flex; 
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 1);
+  font-family: sans-serif;
+  padding: 12px;
+  border: none;
+  border-radius: 2px;
+  box-shadow: 1px 1px 30px rgb(81, 81, 81);
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 600px;
+  min-width: 300px;
+  color: rgb(70, 70, 70);
+}
+
+#helper-topbar {
+  display: flex; 
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#helper-tooltip i {
+  color: var(--primary-color);
+}
+
+#helper-title {
+  margin-left: 5px;
+}
+
+#helper-title-div {
+  display: flex;
+  align-items: center;;
+  font-size: 1.2em;
+}
+
+#helper-title-div i {
+  margin-right: 3px;
+}
+
+#helper-content {
+  padding: 10px;
+  font-size: .95em;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+#helper-bottombar {
+  display: flex; 
+  justify-content: space-between;
+}
+
+#helper-bottombar i {
+  color: white;
+}
+
+#helper-bottombar button {
+  font-size: .85em;
+}
+
+#data-title {
+  font-size: .9em;
+  border: 1px solid white; 
+  border-radius: 3px;
+  box-sizing: border-box;
+  padding: 5px 10px;
+  margin-top: 5px;
+}
+
+#data-title:hover {
+  border: 1px solid #d9d9d9; 
 }
 
 @keyframes flashAnimation {

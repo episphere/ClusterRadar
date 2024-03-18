@@ -376,18 +376,18 @@ export function addOpenableSettings(container, buttonElement, label, content) {
       e.stopPropagation()
       setOpened(!settingsContentWrapper.getAttribute("opened"))
   
-      if (settingsContentWrapper.getAttribute("opened")) {
-        const settingsContent = document.getElementById("settings-template")
-        const settingsTitle = document.getElementById("settings-title")
-        settingsTitle.innerText = label
+      // if (settingsContentWrapper.getAttribute("opened")) {
+      //   const settingsContent = document.getElementById("settings-template")
+      //   const settingsTitle = document.getElementById("settings-title")
+      //   settingsTitle.innerText = label
     
-        settingsContentWrapper.style.display = "block"
-        settingsContentWrapper.innerHTML = ''
-        settingsContentWrapper.appendChild(settingsContent)
-        buttonLabel.style.display = "none"
-      } else {
-        settingsContentWrapper.style.display = "none"
-      }
+      //   settingsContentWrapper.style.display = "block"
+      //   settingsContentWrapper.innerHTML = ''
+      //   settingsContentWrapper.appendChild(settingsContent)
+      //   buttonLabel.style.display = "none"
+      // } else {
+      //   settingsContentWrapper.style.display = "none"
+      // }
     })
   }
   

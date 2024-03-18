@@ -31,8 +31,9 @@
       <div id="sidebar"> 
         <i class="settings-button fa-solid fa-folder" label="Configure data"></i>
         <i class="settings-button fa-solid fa-screwdriver-wrench" label="Methods"></i>
-        <i class="settings-button fas fa-palette" label="Coloring mode" for="coloring-mode-settings"></i>
-        <i id="download-button" class="settings-button fa-solid fa-download" label="Download results" noopen=></i>
+        <i id="coloring-mode-button" class="settings-button fas fa-palette" label="Coloring mode" for="coloring-mode-settings"></i>
+        <i id="download-button" class="settings-button fa-solid fa-download" label="Download results" noopen></i>
+        <i id="tutorial-button" class="settings-button fas fa-info-circle" noopen label="Tutorial"></i>
         <!-- <i class="settings-button fa-solid fa-arrow-pointer"></i>
         <i class="settings-button fa-solid fa-earth-americas"></i>
         <i class="settings-button fas fa-weight-hanging"></i>
@@ -62,7 +63,10 @@
             
             <span class="exp-card-label">...</span>
             <div id="map-card-content" class="exp-card-content">
-              <div class="card-container-container"><div id="map-plot-container"></div></div>
+              <div id="data-title" contenteditable="true">Spatial clusters of US county-level cancer mortality from the CDC (crude rate per 100,000)</div>
+              <div class="card-container-container">
+                <div id="map-plot-container"></div>
+              </div>
             </div>
           </div>
 
@@ -133,7 +137,7 @@
       <div id="settings-template">
         <div id="settings-topbar">
           <div id="settings-title"></div>
-          <i id="settings-close" class="fa-solid fa-xmark"></i>
+          <i id="settings-close" class="fa-solid fa-xmark close-button"></i>
         </div>
         <div id="settings-content"></div>
       </div>
@@ -141,6 +145,24 @@
       <div id="coloring-mode-settings">
         <!-- <label for="coloring-mode-select" class="form-label">Coloring mode</label> -->
         <select id="coloring-mode-select" class="form-select" aria-label="Coloring mode"></select>
+      </div>
+    </div>
+
+    <div id="helper-tooltip" class="hidden">
+      <div id="helper-topbar">
+        <div id="helper-title-div"><i class="fas fa-info-circle"></i><div id="helper-title"> Welcome to ClusterRadar!</div></div>
+        <i id="helper-close" class="fa-solid fa-xmark close-button"></i>
+      </div>
+      <div id="helper-content">
+        
+      </div>
+      <div id="helper-bottombar">
+        <button id="helper-skip-button" type="button" class="btn btn-light">Skip Tutorial</button>
+        <div> 
+          <button id="helper-prev-button" type="button" class="btn btn-primary"><i class="fas fa-arrow-left"></i></button>
+          <button id="helper-next-button" type="button" class="btn btn-primary"><i class="fas fa-arrow-right"></i></button>
+        </div>
+
       </div>
     </div>
   </body>

@@ -35,6 +35,7 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
     throw new Error(`If spatialData argument is not a FeatureCollection, the 'weightTuples' options must be defined`)
   }
   valueProperty = d => d.value
+  spatialRows = spatialRows.filter(d => Number.isFinite(valueProperty(d)))
 
   if (spatialRows.length == 0) {
     throw new Error("Given the 'valueProperty' definition and 'spatialData', no valid spatial data was found.")
@@ -170,6 +171,7 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
           denom += (values[i]+offset) * (values[j]+offset)
         }
       }
+      console.log(values)
       globalCorrelation = (valueIndex) => {
         const getis = d3.sum(ids, id1 => {
           const weightPairs = weightMatrix.getWeightPairs(id1)

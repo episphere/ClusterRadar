@@ -6,6 +6,7 @@ import { categoricalColorLegend, plotChoropleth } from "./plots.js";
 import { State } from "./State.js";
 import { addOpenableSettings, addPathSelectionBox, addPopperTooltip, 
   cacheWithVersion, downloadData, getPathsBoundingBox, hookSelect, unzipJson } from "./helper.js";
+import { startTutorial } from "./tutorial.js";
 
 // Here, we're going for some event based programming. To kick things off, the start() method runs which sets up 
 // various things which can run immediately (e.g. finding elements). start() runs the initializeState() method, which
@@ -119,6 +120,8 @@ function start() {
     elements.auxContainer.classList.toggle("collapsed")
   })
 
+  document.getElementById("tutorial-button").addEventListener("click", () => startTutorial())
+
   // TODO: Move/remove
   stuff.auxCards.forEach(card => card.setLoading(false))
 
@@ -130,7 +133,11 @@ function start() {
   })
 
   document.querySelectorAll(".settings-button").forEach(element => {
-    const content = document.getElementById(element.getAttribute("for"))
+    let content = document.getElementById(element.getAttribute("for"))
+    if (!content) {
+      content = document.createElement("div")
+      content.innerText = "..."
+    }
     addOpenableSettings(elements.mainContainer, element, element.getAttribute("label"), content)
   })
 
@@ -199,7 +206,7 @@ function initializeState() {
 
 async function initialDataLoad() {
   const geoData = await d3.json("data/geography/counties.json")
-  let valueData = await d3.csv("data/time_series/mortality_2011-2020_us.csv")
+  let valueData = await d3.csv("data/time_series/us-county_mortality_malignant-neoplasms_1999-2020.csv")
 
   // TODO: Delete this when we have a proper time format parsing logic
   valueData.forEach(row => row.year = parseInt(row.year))
@@ -389,12 +396,16 @@ function updatedClusterJobs() {
 function updateClusterResults() {
   state.loadingProgress = { progress: 95, message: "Plotting" }
 
+  if (!state.tutorialCompleted) {
+    startTutorial()
+  }
+
   const label = document.createElement("label")
   //label.innerText = state.timeField
-  label.innerText = "Timestep:"
   const input = document.createElement("input")
   input.setAttribute("type", "range")
   input.classList.add("form-range")
+  elements.timestepLabel = label
   
   const timesteps = [...new Set(state.data.valueData.map(d => d[state.timeField]))].sort((a,b) => a - b)
   input.setAttribute("min", 0)
@@ -404,6 +415,7 @@ function updateClusterResults() {
 
   input.addEventListener("input", () => {
     state.timestep = timesteps[input.value]
+    elements.timestepLabel.innerText = state.timestep
   })
 
   elements.timeInputContainer.innerHTML = '' 
@@ -435,6 +447,8 @@ function updatePlotSettings() {
       const timesteps = [...new Set(state.clusterResults.local.map(d => d.timestep))].sort((a,b) => a - b)
       stuff.timestepExtent = d3.extent(timesteps)
       state.timestep = timesteps.at(-1)
+      // TODO: Better handling of timestep label, perhaps move to scrubber or elsewhere, or at least handle different sizes
+      elements.timestepLabel.innerText = state.timestep//"Timestep:"
     }
   }
 
@@ -891,6 +905,8 @@ function drawMainColorLegend() {
 function drawBaseMap() {
   const DRAW_DEBOUNCE = 200 
   clearTimeout(stuff.drawMapTimeout)
+
+  elements.mapPlotContainer.innerHTML = ''
 
   drawMainColorLegend()
 
