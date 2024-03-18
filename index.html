@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ClusterRadar</title>
+    <link rel="icon" href="images/icon.png">
+    <link crossorigin="anonymous" type="text/css" rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <header>
+      <div id="logo-container">
+        <object id="logo" type="image/svg+xml" data="images/icon_menubar.svg">Your browser does not support SVG</object>
+        <span id="logo-text">ClusterRadar</span>
+      </div>
+
+      <div id="links-container">
+        <i class="fa-brands fa-github"></i>
+        <i class="fa-brands fa-npm"></i>
+        <i class="fa-solid fa-scroll"></i>
+        <i class="fa-solid observable-logo"></i>
+        <i class="fas fa-clipboard-list"></i>
+      </div>
+    </header>
+
+    <div id="main-container">
+      <div id="sidebar"> 
+        <i class="settings-button fa-solid fa-folder" label="Configure data"></i>
+        <i class="settings-button fa-solid fa-screwdriver-wrench" label="Methods"></i>
+        <i class="settings-button fas fa-palette" label="Coloring mode"></i>
+        <i id="download-button" class="settings-button fa-solid fa-download" label="Download results" noopen=></i>
+        <!-- <i class="settings-button fa-solid fa-arrow-pointer"></i>
+        <i class="settings-button fa-solid fa-earth-americas"></i>
+        <i class="settings-button fas fa-weight-hanging"></i>
+        <i class="settings-button fa-solid fa-gear"></i> -->
+      </div>
+
+      <div id="dash-container">
+        <div id="maps-container" class="exp-card-container">
+          <!-- <div id="map-card" min-card-width="400" class="base-card">
+            <div id="map-card-content" class="card-content"></div>
+          </div> -->
+
+          <div id="map-card" min-card-width="400" class="base-card exp-card expanded">
+            <div class="card-top-bar">
+              <div class="card-top-bar-other">
+                <div id="time-input-container">
+                  <!-- <label>Time-step:</label>
+                  <input type="range" class="form-range" value="100" > -->
+                </div>
+                <div id="map-color-legend"></div>
+              </div>
+              
+              <!-- <div class="card-collapse-button">
+                <i class="fa-solid fa-arrows-left-right-to-line"></i>
+              </div> -->
+            </div>
+            
+            <span class="exp-card-label">...</span>
+            <div id="map-card-content" class="exp-card-content">
+              <div class="card-container-container"><div id="map-plot-container"></div></div>
+            </div>
+          </div>
+
+          <div id="map-history-container" min-card-width="400" class="base-card exp-card expanded">
+            <div class="card-top-bar">
+              <div></div>
+              <div class="card-collapse-button">
+                <i class="fa-solid fa-arrows-left-right-to-line"></i>
+              </div>
+            </div>
+            <span class="exp-card-label">Cluster History</span>
+            <div id="map-history-card-content" class="exp-card-content">
+              
+            </div>
+          </div>
+
+        </div>
+        <div id="aux-container" class="exp-card-container">
+          <div id="aux-collapse-toggle">
+            <i class="fa-solid fa-circle-chevron-down"></i>
+          </div>
+          <div id="distribution-card" min-card-width="400" class="base-card exp-card expanded">
+            <div  class="card-top-bar">
+              <div id="distribution-card-top-info"  class="card-top-bar-other"></div>
+              <div class="card-collapse-button">
+                <i class="fa-solid fa-arrows-left-right-to-line"></i>
+              </div>
+            </div>
+            <span class="exp-card-label">Statistic Distribution</span>
+            <div class="card-container-container"><div id="distribution-container" class="exp-card-content"></div></div>
+            <!-- <div id="distribution-container" class="exp-card-content"></div> -->
+          </div>
+
+          <div id="cell-card" min-card-width="400" class="base-card exp-card expanded" >
+            <div class="card-top-bar">
+              <div id="cell-card-top-info" class="card-top-bar-other"></div>
+              <div class="card-collapse-button">
+                <i class="fa-solid fa-arrows-left-right-to-line"></i>
+              </div>
+            </div>
+            <span class="exp-card-label">Cell Plot</span>
+            <div class="card-container-container"><div id="cell-card-content" class="exp-card-content"> </div></div>
+          </div>
+
+          <div id="time-series-card" min-card-width="400" class="base-card exp-card expanded">
+            <div class="card-top-bar">
+              <div id="time-series-card-top-info" class="card-top-bar-other"></div>
+              <div class="card-collapse-button">
+                <i class="fa-solid fa-arrows-left-right-to-line"></i>
+              </div>
+            </div>
+            <span class="exp-card-label">Time-series</span>
+            <div class="card-container-container"><div id="time-series-card-content" class="exp-card-content"></div>
+             
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div style="display: none">
+      <div id="selection-tooltip">
+        <span>Selected</span>
+        <i class="fa-solid fa-circle-xmark"></i>
+      </div>
+
+      <div id="settings-template">
+        <div id="settings-topbar">
+          <div id="settings-title"></div>
+          <i id="settings-close" class="fa-solid fa-xmark"></i>
+        </div>
+        <div id="settings-content"></div>
+      </div>
+    </div>
+  </body>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  <script src="src/clusterRadar.js" type="module"></script>
+</html>
+  
