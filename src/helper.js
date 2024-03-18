@@ -359,7 +359,6 @@ export function addOpenableSettings(container, buttonElement, label, content) {
     buttonLabel.style.display = "none"
   })
 
-  console.log(buttonElement.getAttribute("noopen"))
   if (!buttonElement.hasAttribute("noopen")) {
     buttonElement.addEventListener("click" , (e) => {
       e.stopPropagation()

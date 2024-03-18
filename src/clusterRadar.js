@@ -185,8 +185,8 @@ function initializeState() {
 }
 
 async function initialDataLoad() {
-  const geoData = await d3.json("../data/geography/counties.json")
-  let valueData = await d3.csv("../data/time_series/mortality_2011-2020_us.csv")
+  const geoData = await d3.json("data/geography/counties.json")
+  let valueData = await d3.csv("data/time_series/mortality_2011-2020_us.csv")
 
   // TODO: Delete this when we have a proper time format parsing logic
   valueData.forEach(row => row.year = parseInt(row.year))
