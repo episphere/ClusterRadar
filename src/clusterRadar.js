@@ -4,10 +4,8 @@ import * as Plot from 'https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.13/+e
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 import { categoricalColorLegend, plotChoropleth } from "./plots.js";
 import { State } from "./State.js";
-import { findNeighbors } from "./autocorrelation/neighbors.js";
-import { WeightMatrix, calculateWeightMatrix, localMoran } from "./autocorrelation/autocorrelationOld.js";
-import { addOpenableSettings, addPathSelectionBox, addPopperTooltip, cacheWithVersion, debounce, downloadData, geoLinkData, getPathsBoundingBox, unzipJson } from "./helper.js";
-import turfbbox from 'https://cdn.jsdelivr.net/npm/@turf/bbox@6.5.0/+esm'
+import { addOpenableSettings, addPathSelectionBox, addPopperTooltip, 
+  cacheWithVersion, downloadData, getPathsBoundingBox, unzipJson } from "./helper.js";
 
 // Here, we're going for some event based programming. To kick things off, the start() method runs which sets up 
 // various things which can run immediately (e.g. finding elements). start() runs the initializeState() method, which
