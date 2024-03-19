@@ -13,7 +13,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: 55px;
   padding-left: 20px;
   background: #546c78;
   box-shadow: 0px 7px 9px #d4d4d4;
@@ -36,8 +36,8 @@ header {
 }
 
 #logo {
-  width: 40px;
-  height: 40px;
+  width: 25px;
+  height: 25px;
 }
 
 
@@ -50,11 +50,11 @@ header {
 }
 
 #links-container {
-  margin-inline: 30px;
+  margin-inline: 25px;
   color: white;
-  font-size: 30px;
+  font-size: 25px;
   display: flex; 
-  gap: 20px;
+  gap: 15px;
 }
 
 .observable-logo {
