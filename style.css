@@ -121,6 +121,7 @@ header {
 }
 
 #aux-container.collapsed {
+  min-height: 40px;
   height: 40px;
 }
 
