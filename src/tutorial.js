@@ -85,7 +85,8 @@ const tutorial = [
   },
   { 
     title: "Cell plot", 
-    content: `The cell plot shows the cluster assignments over time for each method.`, 
+    content: `The cell plot shows the cluster assignments over time for each method. Like the density plot, this plot shows
+    the hglobal statistics unless a specific location is currently in focus.`, 
     anchor: "#cell-card", 
     placement: "top"
   },
@@ -93,7 +94,7 @@ const tutorial = [
     title: "Time-series",
      content: `The time-series plot shows the values of the statistics over time. Like the density plots, the red line 
      shows the statistics' value an the dashed grey lines show the upper and lower boundaries for significance. Also like
-     the density plots, this plot shows the global statistics unless a specific location is currently in focus.`, 
+     the other plots, this plot shows the global statistics unless a specific location is currently in focus.`, 
      anchor:  "#time-series-card", 
     placement: "top"
   },

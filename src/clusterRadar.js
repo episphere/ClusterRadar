@@ -241,10 +241,13 @@ function updatedData() {
     row[state.valueField] = parseFloat(row[state.valueField])
   }
 
-  cacheWithVersion("weightTuples", stuff.url.search, calculateWeightTuples).then(weightTuples => {
-    state.weightTuples = weightTuples
-  })
-
+  if (checkDefaultParams()) {
+    d3.json("data/results/weights.json").then(weights => state.weightTuples = weights)
+  } else {
+    cacheWithVersion("weightTuples", stuff.url.search, calculateWeightTuples).then(weightTuples => {
+      state.weightTuples = weightTuples
+    })
+  }
 }
 
 function calculateWeightTuples() {
@@ -265,10 +268,7 @@ function calculateWeightTuples() {
 function updatedWeightMatrix() {
   state.loadingProgress = {progress: 10, message: "Clustering"}
 
-  // TODO: Replace with proper URL argument stuff
-  if (stuff.url.searchParams.get("file") == null && 
-      stuff.url.searchParams.get("clusterMethods") == null && 
-      stuff.url.searchParams.get("weightTuples") == null) {
+  if (checkDefaultParams()) {
     console.log("Reading default results from file")
     
     unzipJson("data/results/spatial_clusters.json.zip", "spatial_clusters.json").then((results) => {
@@ -281,9 +281,14 @@ function updatedWeightMatrix() {
     })
   
   }
-
-  
 }
+
+function checkDefaultParams() {
+  // TODO: Replace with proper URL argument stuff
+  return stuff.url.searchParams.get("file") == null && 
+    stuff.url.searchParams.get("clusterMethods") == null && 
+    stuff.url.searchParams.get("weightTuples") == null
+  }
 
 function calculateClusterResults() {
 
@@ -396,8 +401,9 @@ function updatedClusterJobs() {
 function updateClusterResults() {
   state.loadingProgress = { progress: 95, message: "Plotting" }
 
-  if (!state.tutorialCompleted) {
+  if (!localStorage.tutorialCompleted) {
     startTutorial()
+    localStorage.tutorialCompleted = true
   }
 
   const label = document.createElement("label")
@@ -432,7 +438,8 @@ function updateClusterResults() {
   stuff.resultsByLocation = d3.group(state.clusterResults.local, d => d.id)
 
   document.getElementById("download-button").addEventListener("click", () => {
-    downloadData(JSON.stringify(state.clusterResults, null, 2), "spatial_clusters.json")
+    //downloadData(JSON.stringify(state.clusterResults, null, 2), "spatial_clusters.json")
+    downloadData(JSON.stringify(state.weightTuples, null, 2), "weights.json")
   })
 
   stuff.mainCard.setLoading(false)
