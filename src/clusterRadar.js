@@ -72,7 +72,7 @@ const INITIAL_STATE = {
   coloringMode: "cluster_agg",
 
 
-  valueField: "crude_rate",
+  valueField: "age_adjusted_rate", //"crude_rate",
   geoIdField: "county_code",
   timeField: "year",
   weightMethod: "queen",
@@ -80,6 +80,7 @@ const INITIAL_STATE = {
   globalClusteringMethods: ["moran_i", "geary_c", "getis_ord_general_g"], // TODO: Make dynamic?
   displayMode: {mode: "cluster_agg", method: "local_geary_c"},
   nameProperty: "name",
+  nameField: "county",
  
   timestep: null,
   weightTuples: null,
@@ -156,10 +157,11 @@ function initializeColorStuff() {
   stuff.groupColorMap = new Map(GROUP_COLORS.map(d => [d.group, d.color]))
 
   const notSignificantColor = CLUSTER_COLORS.find(d => d.label == "Not significant").color 
-  const groups = [...new Set(CLUSTER_COLORS.map(d => d.group))]
+  const groups = [...new Set(GROUP_COLORS.map(d => d.group))]
   const scaleMap = new Map()
   groups.forEach(group => {
-    if (group != "Conflict" && group) {
+    //if (group != "Conflict" && group) {
+    if (group) {
       scaleMap.set(group, d3.scaleLinear().range([notSignificantColor, stuff.groupColorMap.get(group)]))
     }
   })
@@ -241,6 +243,12 @@ function updatedData() {
     row[state.valueField] = parseFloat(row[state.valueField])
   }
 
+  if (state.nameField) {
+    stuff.nameMap = new Map(state.data.valueData.map(d => [d[state.geoIdField], d[state.nameField]]))
+  } else {
+    stuff.nameMap = new Map(state.data.valueData.map(d => [d[state.geoIdField, d[state.geoIdField]]]))
+  }
+
   if (checkDefaultParams()) {
     d3.json("data/results/weights.json").then(weights => state.weightTuples = weights)
   } else {
@@ -271,15 +279,19 @@ function updatedWeightMatrix() {
   if (checkDefaultParams()) {
     console.log("Reading default results from file")
     
-    unzipJson("data/results/spatial_clusters.json.zip", "spatial_clusters.json").then((results) => {
-    //d3.json("data/results/spatial_clusters.json").then((results) => {
+    unzipJson("data/results/spatial_clusters_aa.json.zip", "spatial_clusters_aa.json").then((results) => {
       state.clusterResults = results
     })
+  } else if (stuff.url.searchParams.get("file") == "spatial_clusters_cr") {
+    // TODO: Remove this special case when file stuff is properly sorted 
+    // TODO: Need to fix this special case
+    // unzipJson("data/results/spatial_cluster.json.zip", "spatial_clusters.json").then((results) => {
+    //   state.clusterResults = results
+    // })
   } else {
     cacheWithVersion("clusterResults", stuff.url.search, calculateClusterResults).then(clusterResults => {
       state.clusterResults = clusterResults
     })
-  
   }
 }
 
@@ -438,8 +450,11 @@ function updateClusterResults() {
   stuff.resultsByLocation = d3.group(state.clusterResults.local, d => d.id)
 
   document.getElementById("download-button").addEventListener("click", () => {
-    //downloadData(JSON.stringify(state.clusterResults, null, 2), "spatial_clusters.json")
-    downloadData(JSON.stringify(state.weightTuples, null, 2), "weights.json")
+    // TODO: delete 
+    //downloadData(JSON.stringify(state.clusterResults.local.filter(d => d.timestep == 2020), null, 2), "spatial_clusters.json")
+
+    downloadData(JSON.stringify(state.clusterResults, null, 2), "spatial_clusters.json")
+    //downloadData(JSON.stringify(state.weightTuples, null, 2), "weights.json")
   })
 
   stuff.mainCard.setLoading(false)
@@ -596,8 +611,12 @@ function drawTimeSeriesPlot() {
       fx: {label: null, tickFormat: d => METHOD_NAMES.get(d), domain: methods},
       marginBottom: 40,
       marginTop: 40,
+      y: {grid: true},
       marks: [
         Plot.ruleY([0], {stroke: "lightgrey"}),
+        Plot.ruleY(results.filter(d => d.timestep == stuff.timestepExtent[0]), 
+          {y: d => (d.statistic - d.statisticMean)/d.statisticStd, 
+          stroke: "rgb(255,0,0,.3)", fx: "method", strokeDasharray: "3,3"}),
         Plot.lineY(results, {x: "timestep", y: d => (d.statistic - d.statisticMean)/d.statisticStd, 
           stroke: "red", fx: "method"}),
         Plot.lineY(results, {x: "timestep", y: d => (d.lowerCutoff - d.statisticMean)/d.statisticStd, 
@@ -749,9 +768,8 @@ function drawDensityPlot() {
     
     for (const result of results) {
       result.permutationDistribution.forEach(d => distributionPoints.push({
-        n: d.n,
-        low: (d.low - result.statisticMean)/result.statisticStd,
-        high: (d.high - result.statisticMean)/result.statisticStd,
+        x: (d[0] - result.statisticMean)/result.statisticStd,
+        y: d[1],
         method: result.method
       }))
     }
@@ -762,13 +780,15 @@ function drawDensityPlot() {
       height: bbox.height,
       fx: { label: null, tickFormat: d => METHOD_NAMES.get(d), domain: methods },
       y: { axis: null},
+      x: { label: null },
       marks: [
-        Plot.ruleY([0]),
-        Plot.areaY(distributionPoints, {x: d => (d.low + d.high)/2, y: "n", fx: "method", curve: "basis", fill: "lightgrey"}),
+        Plot.areaY(distributionPoints, {x: "x", y: "y", fx: "method", curve: "basis", fill: "lightgrey"}),
         // Plot.ruleX([result.lowerCutoff, result.upperCutoff], {stroke: "black", strokeDasharray: "3,3"}),
         Plot.ruleX(results, {x: d => (d.lowerCutoff-d.statisticMean)/d.statisticStd, stroke: "black",strokeDasharray: "3,3", fx: "method"}),
         Plot.ruleX(results, {x: d => (d.upperCutoff-d.statisticMean)/d.statisticStd, stroke: "black",strokeDasharray: "3,3", fx: "method"}),
-        Plot.ruleX(results, {x: d => (d.statistic-d.statisticMean)/d.statisticStd, stroke: "red", fx: "method"})
+        Plot.ruleX(results, {x: d => (d.statistic-d.statisticMean)/d.statisticStd, stroke: "red", fx: "method"}),
+        Plot.ruleY([0]),
+
       ]
     })
     elements.distributionContainer.appendChild(plot)
@@ -822,6 +842,14 @@ function labelAggColor(labels, colorScaleIndex) {
     }
 
     if (coreGroup == null) {
+      // TODO: Do this better, less ad-hoc.
+      const groupsSet = new Set(groups) 
+      const conflictScale = colorScaleIndex.get("Conflict")
+      if (groupsSet.has("High cluster") && groupsSet.has("Low cluster")) {
+        return conflictScale(1)
+      } else {
+        return conflictScale(0.5)
+      }
       return stuff.groupColorMap.get("Conflict")
     }
   } else if (groups.length == 1) {
@@ -976,7 +1004,8 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
   
   geoPolySelect.on("mouseover", (e,d) => {
     const feature = featureCollection.features[d]
-    const name = feature.properties[state.nameProperty]
+    //const name = feature.properties[state.nameProperty]
+    const name = stuff.nameMap.get(feature.id)
     if (name) {
       nameElement.innerText = name 
     } else {

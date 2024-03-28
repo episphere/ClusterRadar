@@ -1,5 +1,6 @@
 import { findNeighbors } from "./neighbors.js"
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm'
+import gaussian from 'https://cdn.jsdelivr.net/npm/gaussian@1.3.0/+esm'
 
 
 export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
@@ -280,7 +281,7 @@ function globalCorrelationAssignLabel(result, pCutoff, method) {
   }
 }
 
-function calculatePseudoPvalue(statistic, permutedStatistics, cutoffCount, distributionBins) {
+function calculatePseudoPvalue(statistic, permutedStatistics, cutoffCount, distributionSnaps) {
   // And some useful bonus stuff, like boundaries and distributions
   permutedStatistics.sort((a,b) => a - b)
 
@@ -300,17 +301,38 @@ function calculatePseudoPvalue(statistic, permutedStatistics, cutoffCount, distr
 
   const result = { p, lowerCutoff, upperCutoff, statisticMean, statisticStd }
 
-  if (distributionBins) {
-    result.permutationDistribution = distribution(permutedStatistics, distributionBins)
+  if (distributionSnaps) {
+    result.permutationDistribution = estimateDistribution(permutedStatistics, distributionSnaps)
   }
 
   return result
 }
 
-function distribution(values, nBins=20) {
-  return d3.bin().thresholds(nBins)(values).map(bin => ({
-    low: bin.x0, high: bin.x1, n: bin.length
-  }))
+
+function estimateDistribution(X, n=50, extent=null) {
+  const normal = gaussian(0,1)
+  const h = 0.9 * d3.deviation(X) * X.length ** (-1/5)
+  const kernel = kde(X, d => normal.pdf(d), h)
+
+  if (!extent) {
+    extent = d3.extent(X)
+  }
+
+  // Normalize the value scale, takes away the "area under the curve = 1" element, but a good work-around for the 
+  // side by side density plots which will have different scales.
+  const points = d3.range(...extent, (extent[1]-extent[0])/n).map((d,i) => [d, kernel(d)])
+  const max = d3.max(points, d => d[1])
+  return points.map(([x,y]) => [x, y/max])
+}
+
+function kde(X, K, h) {
+  return function (x) {
+    let sum = 0 
+    for (let xi of X) {
+      sum += K((x - xi) / h)
+    }
+    return (1/(X.length*h)) * sum
+  }
 }
 
 function calculateZscoreIndex(rows, valueFunction) {
