@@ -48,8 +48,8 @@ const LOCAL_GLOBAL_METHOD_MAP = new Map([
 const METHOD_NAMES = new Map([
   ["local_moran_i", "Local Moran's I"],
   ["local_geary_c", "Local Geary's C"],
-  ["getis_ord_g", "Getis-Ord G"],
-  ["getis_ord_g*", "Getis-Ord G*"],
+  ["getis_ord_g", "Getis-Ord Gi"],
+  ["getis_ord_g*", "Getis-Ord Gi*"],
   ["getis_ord_general_g", "Getis-Ord General G"],
   ["moran_i", "Moran's I"],
   ["geary_c", "Geary's C"],
@@ -125,13 +125,6 @@ function start() {
 
   // TODO: Move/remove
   stuff.auxCards.forEach(card => card.setLoading(false))
-
-  const selectionCloseButton = document.getElementById("selection-tooltip").querySelector("i")
-  selectionCloseButton.addEventListener("click", () => {
-    state.select = null
-    stuff.selectedLocation.classList.remove("location-selected")
-    stuff.selectionTooltip.hide()
-  })
 
   document.querySelectorAll(".settings-button").forEach(element => {
     let content = document.getElementById(element.getAttribute("for"))
@@ -474,9 +467,16 @@ function updatePlotSettings() {
     }
   }
 
+
   stuff.valueDistribution = d3.bin().thresholds(20)(state.clusterResults.local.map(d => d.value)).map(bin => ({
     low: bin.x0, high: bin.x1, n: bin.length
   }))
+
+  const mean = d3.mean(state.clusterResults.local, d => d.value)
+  const std = d3.deviation(state.clusterResults.local, d => d.value)
+  stuff.standardRange = [mean-std*3, mean+std*3]
+  stuff.standardExtendedRange = [mean-std*3.5, mean+std*3.5]
+  stuff.valueMean = mean
 
   updateFocus()
   updateMultiSelect()
@@ -602,14 +602,14 @@ function drawTimeSeriesPlot() {
     }
   }
 
-  if (results?.length > 0) {
+  if (results?.length > 0 && stuff.timestepExtent) {
     const plot = Plot.plot({
       style: {fontSize: "13px"},
       width: bbox.width,
       height: bbox.height,
-      x: {ticks: [] },
+      x: {ticks: [], label: state.timeField },
       fx: {label: null, tickFormat: d => METHOD_NAMES.get(d), domain: methods},
-      marginBottom: 40,
+      marginBottom: 20,
       marginTop: 40,
       y: {grid: true},
       marks: [
@@ -780,7 +780,7 @@ function drawDensityPlot() {
       height: bbox.height,
       fx: { label: null, tickFormat: d => METHOD_NAMES.get(d), domain: methods },
       y: { axis: null},
-      x: { label: null },
+      x: { label: null, ticks: focus ? [-3,0,3] : [-20, 0, 20], tickFormat: d => String(parseInt(d))  }, // TODO: REMOVE temporary 
       marks: [
         Plot.areaY(distributionPoints, {x: "x", y: "y", fx: "method", curve: "basis", fill: "lightgrey"}),
         // Plot.ruleX([result.lowerCutoff, result.upperCutoff], {stroke: "black", strokeDasharray: "3,3"}),
@@ -999,7 +999,7 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
   tooltipContent.appendChild(nameElement)
   tooltipContent.appendChild(detailElement)
 
-  stuff.selectionTooltip = addPopperTooltip(containerElement)
+  const selectionTooltip = addPopperTooltip(containerElement)
   const selectionTooltipContent = document.getElementById("selection-tooltip")
   
   geoPolySelect.on("mouseover", (e,d) => {
@@ -1022,10 +1022,11 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
         const tooltipPlots = document.createElement("div")
         tooltipPlots.classList.add("tooltip-plots")
 
+        const tsTooltip = createTimeSeriesTooltip(feature.id)
         const cellTooltip = createCellTooltip(locationResults, timestep ? timestep : state.timestep)
-        const densityTooltip = createDensityTooltip(feature.id)
+        //const densityTooltip = createDensityTooltip(feature.id)
 
-        tooltipPlots.appendChild(densityTooltip)
+        tooltipPlots.appendChild(tsTooltip)
         tooltipPlots.appendChild(cellTooltip)
         
         detailElement.innerHTML = '' 
@@ -1052,7 +1053,14 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
     stuff.selectedLocation = e.target 
     e.target.classList.add("location-selected")
 
-    stuff.selectionTooltip.show(e.target, selectionTooltipContent)
+    // // TODO: Use common element - temporary fix due to element getting stuck on invisible reel plot panel
+    // const selectionTooltipContent = document.createElement("div")
+    // selectionTooltipContent.setAttribute("id", "selection-tooltip")
+    // // const span = document.createElement("span")
+    // // span.innerText = "Selected"
+    // selectionTooltipContent.innerHTML = `<span>Selected</span> <i class="fa-solid fa-circle-xmark"></i>`
+
+    selectionTooltip.show(e.target, selectionTooltipContent)
 
     //d3.select(e.target).attr("stroke", "green")
   })
@@ -1062,7 +1070,7 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
 
     if (stuff.selectedLocation != null) {
       stuff.selectedLocation.classList.remove("location-selected")
-      stuff.selectionTooltip.hide()
+      selectionTooltip.hide()
     }
   })
 
@@ -1070,6 +1078,78 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
     tooltip.hide()
     state.hover = null
   })
+
+  const selectionCloseButton = document.getElementById("selection-tooltip").querySelector("i")
+  selectionCloseButton.addEventListener("click", () => {
+    state.select = null
+    stuff.selectedLocation.classList.remove("location-selected")
+    selectionTooltip.hide()
+  })
+}
+
+function createTimeSeriesTooltip(id) {
+  // TODO: The plot alignment here probably breaks with different number of timesteps,
+  // due to some weird resizing stuff on the cell plot.
+
+  const results = stuff.resultsByLocation.get(id)
+  //console.log(results)
+
+  const div = document.createElement("div")
+  div.style.display = "flex"
+  
+  const value = results.find(d => d.timestep == state.timestep)?.value
+  const tsPlot = Plot.plot({
+    width: 142,
+    height: 60,
+    marginRight: 1,
+    marginLeft: 35,
+    marginBottom: 10,
+    marginTop: 25,
+    x: {axis: null},
+    //y: {ticks: stuff.standardRange, domain: stuff.standardRange, label: state.valueField,},
+    y: {ticks: [stuff.standardRange[0], stuff.valueMean, stuff.standardRange[1]], 
+      domain: stuff.standardRange, label: state.valueField,  grid: true},
+    marks: [
+      Plot.lineY(results, {x: "timestep", y: "value", stroke: "black"}),
+      Plot.dot([value], {x: state.timestep, y: d => d, fill: "red"}),
+      Plot.ruleY([value], {x1: state.timestep, x2: stuff.timestepExtent[1], stroke: "red"})
+    ]
+  })
+
+  //console.log(stuff.valueDistribution, stuff.standardRange)
+  const nExtent = d3.extent(stuff.valueDistribution, d => d.n)
+  const nRange = nExtent[1] - nExtent[0]
+  const nLargerRange = [nExtent[0], nExtent[1] + nRange*0.3] // For text spacing
+  const densityPlot =Plot.plot({
+    width: 35,
+    height: 45,
+    marginLeft: 0, 
+    marginRight: 15,
+    marginTop: 15, 
+    marginBottom: 0,
+    x: {axis: null, domain: nLargerRange},
+    y: {domain: stuff.standardExtendedRange, axis: null},
+    marks: [
+      //Plot.ruleY(stuff.standardRange, {stroke: "red"}),
+      Plot.areaX(stuff.valueDistribution, {
+        //y: d => d.low + (d.high - d.low)/2, 
+        y: d => d.low, // TODO: Fix this
+        x: "n", 
+        //curve: "basis", 
+        fill: "lightgrey"
+      }),
+      Plot.ruleY([value], {stroke: "red", strokeWidth: 1, x2: nRange/2}),
+      Plot.text([value], {y: d => d, 
+        x: nLargerRange[1], //frameAnchor: "right",
+        textAnchor: "right",
+        text: value, fill: "black", })
+
+    ]
+  })
+
+  div.appendChild(tsPlot)
+  div.appendChild(densityPlot)
+  return div
 }
 
 function createDensityTooltip(id) {
@@ -1096,13 +1176,13 @@ function createDensityTooltip(id) {
 
 function createCellTooltip(locationResults, timestep) {
   const labels = locationResults.map(d => ({timestep: d.timestep, labels: d.statistics.map(d => d.label)}))
-  return Plot.plot({
+  const plot = Plot.plot({
     marginBottom: 20,
     marginTop: 5,
     // TODO: Label fitting margins.
     marginLeft: 5,
-    marginRight: 5,
-    width: 120,
+    marginRight: 10,
+    width: 130,
     height: 40,
     x: {type: "band", ticks: stuff.timestepExtent.map(String), domain: stuff.timesteps.map(String)},
     marks: [
@@ -1113,6 +1193,8 @@ function createCellTooltip(locationResults, timestep) {
       })
     ]
   })
+  plot.style.marginLeft = "25px"
+  return plot
 }
 
 
