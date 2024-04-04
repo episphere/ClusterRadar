@@ -7,6 +7,7 @@ import { State } from "./State.js";
 import { addOpenableSettings, addPathSelectionBox, addPopperTooltip, 
   cacheWithVersion, downloadData, getPathsBoundingBox, hookSelect, unzipJson } from "./helper.js";
 import { startTutorial } from "./tutorial.js";
+import { DataWizard } from "./DataWizard.js";
 
 // Here, we're going for some event based programming. To kick things off, the start() method runs which sets up 
 // various things which can run immediately (e.g. finding elements). start() runs the initializeState() method, which
@@ -67,6 +68,7 @@ const GROUP_COLORS = [
 const elements = {}
 const stuff = {}
 let state = null 
+let dataWizard = null
 
 const INITIAL_STATE = {
   coloringMode: "cluster_agg",
@@ -126,6 +128,26 @@ function start() {
   // TODO: Move/remove
   stuff.auxCards.forEach(card => card.setLoading(false))
 
+  const otherElements = document.getElementById("other-elements")
+  const dataWizardContainer = document.createElement("div")
+  dataWizardContainer.setAttribute("id", "data-wizard")
+  otherElements.appendChild(dataWizardContainer)
+
+
+  const runDataCallback = (geoData, valueData, valueFileName) => {
+    stuff.url.searchParams.set("file", "user_file")
+    history.pushState(null, null, '?' + stuff.url.searchParams.toString());
+
+    runData(geoData, valueData)
+  }
+
+  dataWizard = new DataWizard(dataWizardContainer, runDataCallback,{
+    spatialDataDefaults: [{name: "us_counties.json", path: "data/geography/us_counties.json"}],
+    vectorDataDefaults: [{name: "us-county_mortality_malignant-neoplasms_1999-2020.csv", 
+      path: "data/time_series/us-county_mortality_malignant-neoplasms_1999-2020.csv"}]
+  })
+
+
   document.querySelectorAll(".settings-button").forEach(element => {
     let content = document.getElementById(element.getAttribute("for"))
     if (!content) {
@@ -139,7 +161,10 @@ function start() {
 
   document.addEventListener('DOMContentLoaded', async function() {
     initializeState()
-    await initialDataLoad()
+    cacheWithVersion("data", stuff.url.search, initialDataLoad).then(data => {
+      state.data = data 
+    })
+    //await initialDataLoad()
   })
 }
 
@@ -200,15 +225,31 @@ function initializeState() {
 }
 
 async function initialDataLoad() {
-  const geoData = await d3.json("data/geography/counties.json")
-  let valueData = await d3.csv("data/time_series/us-county_mortality_malignant-neoplasms_1999-2020.csv")
+  async function loadData() {
+    const geoData = await d3.json("data/geography/us_counties.json")
+    let valueData = await d3.csv("data/time_series/us-county_mortality_malignant-neoplasms_1999-2020.csv")
+    return {geoData, valueData}
+  }
 
-  // TODO: Delete this when we have a proper time format parsing logic
-  valueData.forEach(row => row.year = parseInt(row.year))
+  return new Promise((resolve) => {
+  
+    loadData().then(({geoData, valueData}) => {
+        // TODO: Delete this when we have a proper time format parsing logic
+      valueData.forEach(row => row.year = parseInt(row.year))
+    
+      // TODO: Delete 
+      //valueData = valueData.filter(d => d.year == 2020)
+    
+      const data = {geoData, valueData}
+      //state.data = data 
+      resolve(data)
+    })
+   
+  })
+ 
+}
 
-  // TODO: Delete 
-  //valueData = valueData.filter(d => d.year == 2020)
-
+async function runData(geoData, valueData) {
   state.data = { geoData, valueData }
 }
 
@@ -422,7 +463,7 @@ function updateClusterResults() {
   input.setAttribute("min", 0)
   input.setAttribute("max", timesteps.length-1)
   input.setAttribute("value", timesteps.length-1)
-  stuff.timesteps = timesteps
+  stuff.timesteps = timesteps.map(d => String(d))
 
   input.addEventListener("input", () => {
     state.timestep = timesteps[input.value]
@@ -487,6 +528,7 @@ function updateFocus() {
   drawDensityPlot()
   drawCellPlot()
   drawTimeSeriesPlot()
+  console.log(state)
 }
 
 function updateMultiSelect() {
@@ -607,7 +649,7 @@ function drawTimeSeriesPlot() {
       style: {fontSize: "13px"},
       width: bbox.width,
       height: bbox.height,
-      x: {ticks: [], label: state.timeField },
+      x: {ticks: [], label: state.timeField, type: "point", domain: stuff.timesteps },
       fx: {label: null, tickFormat: d => METHOD_NAMES.get(d), domain: methods},
       marginBottom: 20,
       marginTop: 40,
@@ -709,7 +751,7 @@ function drawCellPlot() {
       height ,
       marks: [
         Plot.cell(cells, {
-          x: "timestep",
+          x: d => String(d["timestep"]),
           y: "method",
           fill: d => d.labels ? labelAggColor(d.labels, stuff.localScaleIndex) : colorMap.get(d.label)
         })
@@ -1092,12 +1134,24 @@ function createTimeSeriesTooltip(id) {
   // due to some weird resizing stuff on the cell plot.
 
   const results = stuff.resultsByLocation.get(id)
-  //console.log(results)
 
   const div = document.createElement("div")
   div.style.display = "flex"
   
   const value = results.find(d => d.timestep == state.timestep)?.value
+
+  const marks =  [
+    //Plot.ruleY([value], {x1: state.timestep, x2: stuff.timestepExtent[1], stroke: "red"}),
+    Plot.lineY(results, {x: "timestep", y: "value", stroke: "black"}),
+
+  ]
+
+  if (value != null) {
+    marks.push(Plot.dot([value], {x: state.timestep, y: d => d, fill: "red"}))
+    marks.push(Plot.lineY(results, {x: "timestep", y: "value", stroke: "black"}))
+  }
+
+
   const tsPlot = Plot.plot({
     width: 142,
     height: 60,
@@ -1105,15 +1159,11 @@ function createTimeSeriesTooltip(id) {
     marginLeft: 35,
     marginBottom: 10,
     marginTop: 25,
-    x: {axis: null},
+    x: {axis: null, type: "point", domain: stuff.timesteps},
     //y: {ticks: stuff.standardRange, domain: stuff.standardRange, label: state.valueField,},
     y: {ticks: [stuff.standardRange[0], stuff.valueMean, stuff.standardRange[1]], 
       domain: stuff.standardRange, label: state.valueField,  grid: true},
-    marks: [
-      Plot.lineY(results, {x: "timestep", y: "value", stroke: "black"}),
-      Plot.dot([value], {x: state.timestep, y: d => d, fill: "red"}),
-      Plot.ruleY([value], {x1: state.timestep, x2: stuff.timestepExtent[1], stroke: "red"})
-    ]
+    marks: marks
   })
 
   //console.log(stuff.valueDistribution, stuff.standardRange)
