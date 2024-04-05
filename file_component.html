@@ -1,0 +1,112 @@
+<div id="data-wizard-container" class="container">
+  <div class="row mx-3">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active"  id="nav-map-file">Map file</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link"  id="nav-vector-data">Values file</a>
+      </li>
+    </ul>
+
+    <div class="tab-content p-4" id="data-config-tabs">
+      <div class="tab-pane fade show active" id="tab-map-file" role="tabpanel" aria-labelledby="profile-tab">
+        <div class="row">
+          <div class="col-6">
+            <p class="mb-2">Upload a GeoJSON file for the map, or choose one of the default options.</p>
+            <div class="row">
+              <div class="col-md-6">
+                <input id="spatial-file-upload" type="file" class="form-control" id="customFile" />
+
+                
+              </div>
+              <div class="col-md-6">
+                <select id="spatial-data-select" class="form-select"></select>
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <p class="col-md-4">Projection:</p>
+              <div class="col-md-8">
+                <select id="projection-select" class="form-select"></select>
+              </div>
+            </div>
+
+            <!-- <p class="mb-2 mt-3">(Optional) Upload a GeoJSON file for additional map outlines.</p>
+            <div class="row">
+              <div class="col-md-6">
+                <input id="spatial-extra-file-upload" type="file" class="form-control" id="customFile" />
+              </div>
+              <div class="col-md-6">
+                <select id="spatial-extra-data-select" class="form-select"></select>
+              </div>
+            </div> -->
+          </div>
+
+          <div class="col-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">Preview</h5>
+                <div id="map-preview-container" class="d-flex justify-content-center"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-vector-data" role="tabpanel" aria-labelledby="profile-tab">
+        
+        <div class="row">
+          <div class="col-6">
+            <p class="mb-2">Upload a file containing your vector data, or if you are using one of the default 
+              maps you can pick a pre-loaded dataset. Each row should contain an ID field to link it to the map 
+              (e.g. a FIPS code), a date or numeric field that indicates time, and a numeric field 
+              for the value you wish to investigate.</p>
+            <div class="row">
+              <div class="col-md-6">
+                <input id="vector-file-upload" type="file" class="form-control" id="customFile" />
+              </div>
+              <div class="col-md-6">
+                <select id="vector-data-select" class="form-select"></select>
+              </div>
+            </div>
+
+            
+            <div class="row mt-3">
+              <p class="col-md-4">Spatial ID field:</p>
+              <div class="col-md-8">
+                <select id="spatial-field-select" class="form-select" disabled></select>
+              </div>
+            </div>
+
+            <div class="row mt-1">
+              <p class="col-md-4">Value field:</p>
+              <div class="col-md-8">
+                <select id="value-field-select" class="form-select" disabled></select>
+              </div>
+            </div>
+
+            <div class="row mt-1">
+              <p class="col-md-4">Time field:</p>
+
+              <div class="col-md-8">
+                <select id="time-field-select" class="form-select" disabled></select>
+              </div>
+            </div>
+
+            <div class="row mt-2"><button id="run-button" class="btn btn-primary">Run</button></div>
+          </div>
+
+          <div class="col-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between"><h5 class="card-title">Preview</h5> <div><input id="time-preview-range" type="range" class="form-range"  style="width: 300px"><span id="time-preview-label"></span></div></div>
+                <div id="vector-preview-container" class="d-flex justify-content-center"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+    </div>
+  </div>
+</div>
