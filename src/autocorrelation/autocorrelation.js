@@ -172,7 +172,6 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
           denom += (values[i]+offset) * (values[j]+offset)
         }
       }
-      console.log(values)
       globalCorrelation = (valueIndex) => {
         const getis = d3.sum(ids, id1 => {
           const weightPairs = weightMatrix.getWeightPairs(id1)

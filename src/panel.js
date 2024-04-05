@@ -37,7 +37,6 @@ function syncCards(cards) {
 function cardToggleExpand(cardContainer, cards, targetCard) {
   targetCard.setAttribute("card-expanded", targetCard.getAttribute("card-expanded") == "true" ? "false" : "true")
   smartCollapse(cardContainer, cards, targetCard)
-
 }
 
 function smartCollapse(cardContainer, cards, keepExpanded=null) {
@@ -104,11 +103,17 @@ class ExpandableCard {
     this.container = container
     this.cardContent = this.element.querySelector(".exp-card-content")
 
+
+
+    const loaderContainer = document.createElement("div")
+    loaderContainer.classList.add("card-loader-container")
+
     const loader = document.createElement("div")
     loader.classList.add("card-loader")
+    loaderContainer.appendChild(loader)
 
-    this.element.appendChild(loader)
-    this.loader = loader
+    this.element.appendChild(loaderContainer)
+    this.loader = loaderContainer
 
     this.setLoading(true)
   }

@@ -19,18 +19,18 @@
       </div>
 
       <div id="links-container">
-        <i class="fa-brands fa-github"></i>
-        <i class="fa-brands fa-npm"></i>
+        <a href="https://github.com/episphere/ClusterRadar"><i class="fa-brands fa-github"></i> </a>
+        <!-- <i class="fa-brands fa-npm"></i>
         <i class="fa-solid fa-scroll"></i>
-        <i class="fa-solid observable-logo"></i>
-        <i class="fas fa-clipboard-list"></i>
+        <i class="fa-solid observable-logo"></i> -->
+        <a href="https://forms.gle/Eywf1beW74LEhK6ZA"><i class="fas fa-clipboard-list"></i></a>
       </div>
     </header>
 
     <div id="main-container">
       <div id="sidebar"> 
         <i class="settings-button fa-solid fa-folder" label="Configure data" for="data-wizard"></i>
-        <i class="settings-button fa-solid fa-screwdriver-wrench" label="Methods"></i>
+        <i class="settings-button fa-solid fa-screwdriver-wrench" label="Methods" for="methods-select"></i>
         <i id="coloring-mode-button" class="settings-button fas fa-palette" label="Coloring mode" for="coloring-mode-settings"></i>
         <i id="download-button" class="settings-button fa-solid fa-download" label="Download results" noopen></i>
         <i id="tutorial-button" class="settings-button fas fa-info-circle" noopen label="Tutorial"></i>
@@ -50,8 +50,8 @@
             <div class="card-top-bar">
               <div class="card-top-bar-other">
                 <div id="time-input-container">
-                  <!-- <label>Time-step:</label>
-                  <input type="range" class="form-range" value="100" > -->
+                  <input id="time-slider" step="1" type="range" class="form-range me-2">
+                  <label id="time-label"></label>
                 </div>
                 <div id="map-color-legend"></div>
               </div>
@@ -61,9 +61,10 @@
               </div> -->
             </div>
             
-            <span class="exp-card-label">...</span>
+            <span class="exp-card-label">Loading...</span>
             <div id="map-card-content" class="exp-card-content">
-              <div id="data-title" contenteditable="true">Spatial clusters of US county-level cancer mortality from the CDC (age-adjusted rate per 100,000)</div>
+              <div id="data-title" contenteditable="true"></div> 
+              <!-- Spatial clusters of US county-level cancer mortality from the CDC (age-adjusted rate per 100,000) -->
               <div class="card-container-container">
                 <div id="map-plot-container"></div>
               </div>
@@ -140,6 +141,12 @@
           <i id="settings-close" class="fa-solid fa-xmark close-button"></i>
         </div>
         <div id="settings-content"></div>
+      </div>
+
+      <div id="methods-settings">
+        <!-- <label for="coloring-mode-select" class="form-label">Coloring mode</label> -->
+        <!-- <select id="methods-select" aria-label="Methods" multiple></select> -->
+        <div id="methods-select"></div>
       </div>
 
       <div id="coloring-mode-settings">

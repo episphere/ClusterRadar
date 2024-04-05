@@ -20,13 +20,13 @@ export class State {
 
 
   defineProperty(property, value, parentProperties) {
-    if (!this.hasOwnProperty(property)) {
+    //if (!this.hasOwnProperty(property)) {
       Object.defineProperty(this, property, {
         set: function(value) { this._setProperty(property, value) },
         get: function() { return this.properties[property] }
       })
       this.properties[property] = value
-    }
+    //}
     this.dependencyTree.addNode(property, {listeners: [], parents: parentProperties}, parentProperties)
   }
 

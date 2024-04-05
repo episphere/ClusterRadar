@@ -29,7 +29,6 @@ export function addPathSelectionBox(svgSelect, pathSelect, selectCallback) {
     points.push({value: d, points: elem[i].getPathData().map(d => d.values)})
   })
 
-  //console.log(points)
   addSelectionBox(svgSelect, rect => {
     const selectedPaths = points.filter(points => {
       return anyPointInRectangle(points.points, [rect.x, rect.y, rect.width, rect.height])
@@ -202,6 +201,7 @@ export async function cacheWithVersion(id, versionString, dataFetcher) {
   const tx = db.transaction("cache", "readwrite");
   const store = tx.objectStore("cache");
 
+  console.log("[Cache]", id, versionString)
   try {
     // Handle the result
     const getRequest = store.get(id); 
@@ -219,14 +219,17 @@ export async function cacheWithVersion(id, versionString, dataFetcher) {
         await store.delete(id);
       }
 
-      const freshData = await dataFetcher();
-      // Open a new transaction for fetching and caching 
-      const newTx = db.transaction("cache", "readwrite"); 
-      const newStore = newTx.objectStore("cache"); 
-      await newStore.put({ id, version: versionString, data: freshData }); 
+      if (dataFetcher) {
+        const freshData = await dataFetcher();
+        // Open a new transaction for fetching and caching 
+        const newTx = db.transaction("cache", "readwrite"); 
+        const newStore = newTx.objectStore("cache"); 
+        await newStore.put({ id, version: versionString, data: freshData }); 
 
-      await newTx.complete; // Wait for the new transaction to complete
-      return freshData; 
+        await newTx.complete; // Wait for the new transaction to complete
+        return freshData; 
+      }
+      
     }
   } catch (error) {
     console.error("Error handling cache:", error);
@@ -402,6 +405,8 @@ export function addOpenableSettings(container, buttonElement, label, content) {
 
   container.appendChild(buttonLabel)
   container.appendChild(settingsContentWrapper)
+
+  return {setOpened}
 }
 
 export function downloadData(data, filename) {
@@ -422,6 +427,52 @@ export async function unzipJson(path, filename) {
   return JSON.parse(await zip.file(filename).async("string"))
 }
 
+export async function checkFileExists(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD' })
+    return response.status === 200
+  } catch (error) {
+    return false
+  }
+}
+
+// This isn't a real proper hook, just a fast implementation
+export function hookCustomMultiSelect(selector, state, valueProperty, optionsProperty) {
+  const element = document.querySelector(selector)
+  element.innerHTML = ''
+  element.classList.add("d-flex")
+  element.classList.add("flex-column")
+
+  function setOptions(options) {
+    for (const option of options) {
+      const row = document.createElement("div")
+      row.style.gap = "5px"
+      row.classList.add("d-flex")
+      const check = document.createElement("input")
+      check.setAttribute("type", "checkbox")
+      check.classList.add("form-check-input")
+      if (state[valueProperty].includes(option.value)) {
+        check.setAttribute("checked", "")
+      }
+      check.addEventListener("click", () => {
+        if (check.checked) {
+          state[valueProperty].push(option.value)
+          state.trigger(valueProperty)
+        } else {
+          state[valueProperty] = state[valueProperty].filter(d => d != option.value)
+        }
+      })
+      const label = document.createElement("label")
+      label.innerText = option.label
+      row.appendChild(check)
+      row.appendChild(label)
+      element.appendChild(row)
+    }
+  }
+  setOptions(state[optionsProperty])
+}
+
+
 export function hookSelect(
   selector,
   state,
@@ -438,22 +489,39 @@ export function hookSelect(
     const selectOptions = [];
     select.innerHTML = ``;
 
-    if (options) {
-      for (let option of options) {
+    if (options) {        
+      
+      options.forEach((option,i) => {
+
+        const optionElement = document.createElement("option");
+        select.appendChild(optionElement);
+
         if (typeof option == "string") {
           option = { value: option, label: format(option) };
         }
         selectOptions.push(option);
-        const optionElement = document.createElement("option");
         optionElement.value = option.value;
         optionElement.innerText = option.label;
 
-        if (option.value == state[valueProperty]) {
-          optionElement.selected = true;
-          select.value = option.value;
+        if (Array.isArray(state[valueProperty])) {
+
+          if ( state[valueProperty].includes(option.value)) {
+            option.selected = true;
+            optionElement.setAttribute("selected", "")
+            optionElement.selected = true
+            select.options[i].selected = true
+          } else {
+            option.selected = false;
+            optionElement.removeAttribute("selected")
+          }
+        } else {
+          if (option.value == state[valueProperty]) {
+            optionElement.selected = true;
+            select.value = option.value;
+          }
         }
-        select.appendChild(optionElement);
-      }
+    
+      })
     }
   }
 
@@ -464,16 +532,34 @@ export function hookSelect(
 
   state.subscribe(valueProperty, () => {
     for (const option of select.options) {
-      if (option.value == state[valueProperty]) {
-        option.selected = true;
+      if (Array.isArray(state[valueProperty])) {
+         if ( state[valueProperty].includes(option.value)) {
+          option.selected = true;
+        } else {
+          option.selected = false;
+        }
       } else {
-        option.selected = false;
+        if (option.value == state[valueProperty]) {
+          option.selected = true;
+        } else {
+          option.selected = false;
+        }
       }
     }
   });
 
   select.addEventListener("change", () => {
-    state[valueProperty] = select.value;
+    if (select.hasAttribute("multiple")) {
+      const selectedValues = [];
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].selected) {
+          selectedValues.push(select.options[i].value);
+        }
+      }
+      state[valueProperty] = selectedValues;
+    } else {
+      state[valueProperty] = select.value;
+    }
   });
   setOptions(state[optionsProperty]);
 

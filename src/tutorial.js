@@ -143,7 +143,7 @@ export function startTutorial(startIndex=0) {
   
   function unshowPrevious() {
     if (previousAnchor)
-      previousAnchor.style.border = "none"
+      previousAnchor.style.outline = "none"
   }
 
   function showCard() {
@@ -158,7 +158,8 @@ export function startTutorial(startIndex=0) {
     if (tutorialCard.anchor) {
       const anchorElement = document.querySelector(tutorialCard.anchor)
       if (anchorElement) {
-        anchorElement.style.border = "2px solid rgb(255,255,0,0.5)"
+        //anchorElement.style.border = "2px solid rgb(255,255,0,0.5)"
+        anchorElement.style.outline = "2px solid rgb(255,255,0,0.5)"
         previousAnchor = anchorElement
 
         popper = Popper.createPopper(anchorElement, elems.tooltip, {
