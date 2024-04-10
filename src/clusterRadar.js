@@ -1243,7 +1243,7 @@ function createCellTooltip(locationResults, timestep) {
     marginBottom: 20,
     marginTop: 5,
     // TODO: Label fitting margins.
-    marginLeft: 5,
+    marginLeft: 10,
     marginRight: 10,
     width: 130,
     height: 40,
