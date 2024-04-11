@@ -70,7 +70,14 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
       const value = valueIndex.get(spatialRow.id)
       const neighborIdWeightPairs = weightMatrix.getWeightPairs(spatialRow.id)
       const neighborValueWeightPairs = neighborIdWeightPairs.map(([id, w]) => [valueIndex.get(id), w])
-      const lag = d3.sum(neighborValueWeightPairs, ([value, w]) => value * w)
+      const lag = calcLag(neighborValueWeightPairs)
+      if (spatialRow.id == "48047") {
+        console.log(spatialRow.id, neighborValueWeightPairs,neighborValueWeightPairs.filter(d => Number.isFinite(d[0])), lag)
+        
+        const x = d3.sum(neighborValueWeightPairs.filter(d => Number.isFinite(d[0]), d => d[1]))
+        console.log(x, x / neighborIdWeightPairs.length, lag )
+
+      }
 
       // Choose the requested local autocorrelation method
       let localCorrelation = null 
@@ -93,7 +100,7 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
 
         const S = d3.variance(otherValues)
         localCorrelation = (valueWeightPairs) => {
-          const lag = d3.sum(valueWeightPairs, ([value, w]) => value * w)
+          const lag = calcLag(valueWeightPairs)
           const denom = S*Math.sqrt((otherValues.length*d3.sum(valueWeightPairs, ([_,w]) => w**2) - 1)/(otherValues.length-1))
           return (lag-mean) / denom 
         }
@@ -204,6 +211,13 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
 export function calculateEqualContiguousWeightTuples(featureCollection, method) {
   const neighborPairs = findNeighbors(featureCollection, method)
   return equalWeightTuples(neighborPairs)
+}
+
+function calcLag(neighborValueWeightPairs) {
+  const wSum = d3.sum(neighborValueWeightPairs.filter(d => Number.isFinite(d[0])), d => d[1])
+  neighborValueWeightPairs.forEach(d => d[1] = d[1] / wSum)
+  const sum = d3.sum(neighborValueWeightPairs, ([value, w]) => value * w)
+  return sum
 }
 
 function equalWeightTuples(neighborPairs) {
