@@ -118,7 +118,7 @@ async function start() {
 
 function getDataKey() {
   let key = stuff.url.searchParams.get("data") ? 
-    stuff.url.searchParams.get("data")  : "us_cancer_mortality_aa"
+    stuff.url.searchParams.get("data")  : "us_cancer_mortality_aa_sml"
 
   if (stuff.url.searchParams.get("methods")) {
     key += stuff.url.searchParams.get("methods")
