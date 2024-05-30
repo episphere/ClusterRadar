@@ -98,7 +98,7 @@ async function start() {
     unzipJson(defaultDataFilepath, stuff.dataKey + ".json").then(coreState => {
       state = coreState
       render()
-    })
+    }) 
   } else {
     updateLoadingProgress({progress: 10, message: "Attempting cache load"})
     cacheWithVersion("coreState", stuff.dataKey, null).then(coreState => {
