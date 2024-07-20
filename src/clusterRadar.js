@@ -72,6 +72,8 @@ const INITIAL_STATE =  {
   clusteringMethods: ["local_moran_i", "local_geary_c", "getis_ord_g*"],
   globalClusteringMethods: ["moran_i", "geary_c", "getis_ord_general_g"], 
   displayMode: {mode: "cluster_agg", method: "local_geary_c"},
+
+  nameProperty: "name",
 }
 
 
@@ -518,8 +520,8 @@ function addChoroplethTooltip(plotElement, containerElement, featureCollection, 
   
   geoPolySelect.on("mouseover", (e,d) => {
     const feature = featureCollection.features[d]
-    //const name = feature.properties[state.nameProperty]
-    const name = stuff.nameMap?.get(feature.id)
+    const name = feature.properties[state.nameProperty]
+    //const name = stuff.nameMap?.get(feature.id)
     if (name) {
       nameElement.innerText = name 
     } else {
