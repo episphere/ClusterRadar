@@ -65,7 +65,7 @@ export class DataWizard {
     state.defineProperty("timestep", null)
 
     state.defineProperty("spatialData", null)
-    state.defineProperty("vectorData", null)
+    state.defineProperty("vectorData", null, ["spatialData"])
     state.defineProperty("processedVectorData", null)
 
     state.defineJointProperty("vectorDataConfig", ["spatialFieldValue", "valueFieldValue", "timeFieldValue"])
@@ -172,7 +172,7 @@ export class DataWizard {
   }
 
   updatedVectorData() {
-    if (!this.state.spatialData) return 
+    if (!this.state.spatialData || !this.state.vectorData) return 
 
     const fields = new Set() 
     for (const row of this.state.vectorData) {
