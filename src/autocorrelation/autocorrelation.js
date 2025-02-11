@@ -66,18 +66,10 @@ export function spatialAutocorrelation(spatialData, valueProperty, options={}) {
 
     const results = [] 
     for (const spatialRow of spatialRows) {
-      //console.log(feature.id)
       const value = valueIndex.get(spatialRow.id)
       const neighborIdWeightPairs = weightMatrix.getWeightPairs(spatialRow.id)
       const neighborValueWeightPairs = neighborIdWeightPairs.map(([id, w]) => [valueIndex.get(id), w])
       const lag = calcLag(neighborValueWeightPairs)
-      if (spatialRow.id == "48047") {
-        console.log(spatialRow.id, neighborValueWeightPairs,neighborValueWeightPairs.filter(d => Number.isFinite(d[0])), lag)
-        
-        const x = d3.sum(neighborValueWeightPairs.filter(d => Number.isFinite(d[0]), d => d[1]))
-        console.log(x, x / neighborIdWeightPairs.length, lag )
-
-      }
 
       // Choose the requested local autocorrelation method
       let localCorrelation = null 

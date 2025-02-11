@@ -21,7 +21,7 @@ const CLUSTER_COLORS = [
   {label: "Cold-spot", color: "#4269d0", group: "Low cluster"}, 
   {label: "Other positive spatial autocorrelation", shortLabel: "Other positive", color: "#39c486", 
     group: "Other", partialGroups: ["High cluster", "Low cluster"]},
-  {label: "Other negative spatial autocorrelation", shortLabel: "Other positive", color: "#be93c7",
+  {label: "Other negative spatial autocorrelation", shortLabel: "Other negative", color: "#be93c7",
     group: "Other"},
   {label: "Not significant", color: "whitesmoke"},
 ]
