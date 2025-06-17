@@ -6,4 +6,4 @@ ClusterRadar is a web-tool for the interactive exploration of spatial clusters o
 
 A short tutorial will start the first time you visit ClusterRadar. If you wish to revist the tutorial, click on the information icon in the toolbar on the left of the page. 
 
-For more information, see the [pre-print](https://arxiv.org/abs/2404.05897).
+For more information, see the [the paper](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0322393).
